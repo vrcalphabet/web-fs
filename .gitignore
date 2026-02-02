@@ -26,6 +26,3 @@ coverage/
 *.log
 *.swp
 *.swo
-
-*.js
-*.js.map
