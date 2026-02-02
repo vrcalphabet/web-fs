@@ -1,4 +1,4 @@
-import { WebFsFileHandle } from "./WebFSFileHandle";
+import { WebFsFileHandle } from "./WebFsFileHandle";
 
 export class WebFsFileHandleList {
   private _handles;

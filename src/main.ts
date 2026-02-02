@@ -4,13 +4,13 @@ import {
   WebFsPermissionOptions,
 } from "./types";
 import { WebFsDirectoryHandle } from "./WebFsDirectoryHandle";
-import { WebFsFileHandle } from "./WebFSFileHandle";
+import { WebFsFileHandle } from "./WebFsFileHandle";
 import { HandleStore } from "./services/HandleStore";
 import { WebFsFileHandleList } from "./WebFsFileHandleList";
 
 export * from "./types";
 export * from "./WebFsHandle";
-export * from "./WebFSFileHandle";
+export * from "./WebFsFileHandle";
 export * from "./WebFsDirectoryHandle";
 
 /**

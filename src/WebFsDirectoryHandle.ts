@@ -5,7 +5,7 @@ import {
   WebFsPermissionOptions,
   WebFsTreeResult,
 } from "./types";
-import { WebFsFileHandle } from "./WebFSFileHandle";
+import { WebFsFileHandle } from "./WebFsFileHandle";
 import { WebFsHandle } from "./WebFsHandle";
 import path from "node:path";
 import micromatch from "micromatch";
@@ -35,7 +35,7 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     super(handle);
     this._handle = handle;
   }
-  
+
   /**
    * ファイルを`WebFsFileHandle`でラップしたものを返します。
    *
