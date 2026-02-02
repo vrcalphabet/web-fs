@@ -1,0 +1,35 @@
+{
+  "name": "@vrcalphabet/web-fs",
+  "version": "1.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "graph": "madge --image graph.png src/main.ts",
+    "format": "prettier --write \"src/**/*.ts\" --log-level warn",
+    "docs": "npx typedoc"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/md5": "^2.3.6",
+    "@types/micromatch": "^4.0.10",
+    "@types/node": "^25.0.10",
+    "@types/wicg-file-system-access": "^2023.10.7",
+    "madge": "^8.0.0",
+    "typedoc": "^0.28.16",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
+    "vite-plugin-node-polyfills": "^0.2.0"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.2.2",
+    "md5": "^2.3.0",
+    "micromatch": "^4.0.8"
+  }
+}
