@@ -1,5 +1,9 @@
 {
   "name": "@vrcalphabet/web-fs",
+  "description": "TypeScriptで書かれたFile System APIを簡単に操作するためのラッパーライブラリ",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "1.0.0",
   "type": "module",
   "files": [
