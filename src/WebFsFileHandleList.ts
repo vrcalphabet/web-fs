@@ -1,10 +1,10 @@
-import { WebFsFileHandle } from "./WebFsFileHandle";
+import { WebFsFileHandle } from './WebFsFileHandle'
 
 export class WebFsFileHandleList {
-  private _handles;
+  private _handles
 
   private constructor(handles: WebFsFileHandle[]) {
-    this._handles = handles;
+    this._handles = handles
   }
 
   /**
@@ -16,17 +16,17 @@ export class WebFsFileHandleList {
    */
   static async create(
     handles: FileSystemFileHandle[],
-    mode: FileSystemPermissionMode = "read",
+    mode: FileSystemPermissionMode = 'read',
   ): Promise<WebFsFileHandleList | undefined> {
     const validHandles = await Promise.all(
       handles.map((handle) => WebFsFileHandle.create(handle, mode)),
-    );
+    )
     if (validHandles.includes(undefined)) {
-      return undefined;
+      return undefined
     }
 
-    const instance = new this(validHandles as WebFsFileHandle[]);
-    return instance;
+    const instance = new this(validHandles as WebFsFileHandle[])
+    return instance
   }
 
   /**
@@ -36,7 +36,7 @@ export class WebFsFileHandleList {
    * @returns ファイルが取得できた場合は`WebFsFileHandle`、存在しない場合は`undefined`。
    */
   file(fileName: string): WebFsFileHandle | undefined {
-    return this._handles.find((handle) => handle.name === fileName);
+    return this._handles.find((handle) => handle.name === fileName)
   }
 
   /**
@@ -45,7 +45,7 @@ export class WebFsFileHandleList {
    * @returns ファイル名の配列を返します。
    */
   names(): string[] {
-    return this._handles.map((handle) => handle.name);
+    return this._handles.map((handle) => handle.name)
   }
 
   /**
@@ -54,17 +54,17 @@ export class WebFsFileHandleList {
    * @returns ファイルハンドルの配列を返します。
    */
   list(): WebFsFileHandle[] {
-    return this._handles;
+    return this._handles
   }
 
   /**
    * 現在の`WebFsFileHandleList`インスタンスが管理しているファイルハンドルの数を取得します。
    */
   get length(): number {
-    return this._handles.length;
+    return this._handles.length
   }
 
   *[Symbol.iterator]() {
-    yield* this._handles;
+    yield* this._handles
   }
 }

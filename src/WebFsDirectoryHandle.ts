@@ -1,39 +1,39 @@
+import { WebFsFileHandle } from './WebFsFileHandle'
+import { WebFsHandle } from './WebFsHandle'
 import {
   WebFsEntryListOptions,
   WebFsGetDirectoryOptions,
   WebFsGetFileOptions,
   WebFsPermissionOptions,
   WebFsTreeResult,
-} from "./types";
-import { WebFsFileHandle } from "./WebFsFileHandle";
-import { WebFsHandle } from "./WebFsHandle";
-import path from "node:path";
-import micromatch from "micromatch";
+} from './types'
+import micromatch from 'micromatch'
+import path from 'node:path'
 
-type FilterType = "none" | "file" | "dir" | "all";
+type FilterType = 'none' | 'file' | 'dir' | 'all'
 type FilterReturnType = {
-  none: never[];
-  file: FileSystemFileHandle[];
-  dir: FileSystemDirectoryHandle[];
-  all: FileSystemHandle[];
-};
+  none: never[]
+  file: FileSystemFileHandle[]
+  dir: FileSystemDirectoryHandle[]
+  all: FileSystemHandle[]
+}
 
 function toFilterType(file: boolean, dir: boolean): FilterType {
-  if (file && dir) return "all";
-  if (!file && !dir) return "none";
-  return file ? "file" : "dir";
+  if (file && dir) return 'all'
+  if (!file && !dir) return 'none'
+  return file ? 'file' : 'dir'
 }
 
 export class WebFsDirectoryHandle extends WebFsHandle {
   /**
    * ディレクトリハンドルの種類。常に`"directory"`を返します。
    */
-  readonly type = "directory";
-  protected _handle;
+  readonly type = 'directory'
+  protected _handle
 
   private constructor(handle: FileSystemDirectoryHandle) {
-    super(handle);
-    this._handle = handle;
+    super(handle)
+    this._handle = handle
   }
 
   /**
@@ -45,13 +45,13 @@ export class WebFsDirectoryHandle extends WebFsHandle {
    */
   static async create(
     handle: FileSystemDirectoryHandle,
-    mode: FileSystemPermissionMode = "read",
+    mode: FileSystemPermissionMode = 'read',
   ): Promise<WebFsDirectoryHandle | undefined> {
-    const instance = new this(handle);
-    const verified = await instance._verifyPermission(mode);
-    if (!verified) return undefined;
+    const instance = new this(handle)
+    const verified = await instance._verifyPermission(mode)
+    if (!verified) return undefined
 
-    return instance;
+    return instance
   }
 
   /**
@@ -66,25 +66,22 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     options?: WebFsGetFileOptions,
   ): Promise<WebFsFileHandle | undefined> {
     try {
-      const directoryNames = path.resolve(filePath).split(path.sep).slice(1);
-      const fileName = directoryNames.pop()!;
+      const directoryNames = path.resolve(filePath).split(path.sep).slice(1)
+      const fileName = directoryNames.pop()!
 
-      if (fileName === "") {
-        return undefined;
+      if (fileName === '') {
+        return undefined
       }
 
-      const dirHandle = await this._dirByPath(directoryNames, options?.create);
+      const dirHandle = await this._dirByPath(directoryNames, options?.create)
       const fileHandle = await dirHandle.getFileHandle(fileName, {
         create: options?.create,
-      });
-      const webFsFileHandle = await WebFsFileHandle.create(
-        fileHandle,
-        options?.mode,
-      );
+      })
+      const webFsFileHandle = await WebFsFileHandle.create(fileHandle, options?.mode)
 
-      return webFsFileHandle;
+      return webFsFileHandle
     } catch {
-      return undefined;
+      return undefined
     }
   }
 
@@ -100,21 +97,21 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     options?: WebFsGetDirectoryOptions,
   ): Promise<WebFsDirectoryHandle | undefined> {
     try {
-      const directoryNames = path.resolve(dirPath).split(path.sep).slice(1);
+      const directoryNames = path.resolve(dirPath).split(path.sep).slice(1)
 
-      if (directoryNames.length === 1 && directoryNames[0] === "") {
-        return undefined;
+      if (directoryNames.length === 1 && directoryNames[0] === '') {
+        return undefined
       }
 
-      const dirHandle = await this._dirByPath(directoryNames, options?.create);
+      const dirHandle = await this._dirByPath(directoryNames, options?.create)
       const webFsDirectoryHandle = await WebFsDirectoryHandle.create(
         dirHandle,
         options?.mode,
-      );
+      )
 
-      return webFsDirectoryHandle;
+      return webFsDirectoryHandle
     } catch {
-      return undefined;
+      return undefined
     }
   }
 
@@ -124,44 +121,44 @@ export class WebFsDirectoryHandle extends WebFsHandle {
    * @returns globパターンにマッチしたファイルの`WebFsFileHandle`の配列。
    */
   async glob(pattern: string): Promise<WebFsFileHandle[]> {
-    if (pattern === "") {
-      return [];
+    if (pattern === '') {
+      return []
     }
 
-    const patterns = pattern.split("/");
-    const entries = await this._glob(patterns);
+    const patterns = pattern.split('/')
+    const entries = await this._glob(patterns)
     const result = entries.map((entry) =>
       WebFsFileHandle.create(entry as FileSystemFileHandle),
-    );
+    )
 
-    return (await Promise.all(result)).filter((entry) => entry !== undefined);
+    return (await Promise.all(result)).filter((entry) => entry !== undefined)
   }
 
   private async _glob(
     patterns: string[],
     patternIndex: number = 0,
     cd: FileSystemDirectoryHandle = this._handle,
-    path: string = "",
+    path: string = '',
   ): Promise<FileSystemFileHandle[]> {
-    const result: FileSystemFileHandle[] = [];
-    const entries = await Array.fromAsync(cd.values());
+    const result: FileSystemFileHandle[] = []
+    const entries = await Array.fromAsync(cd.values())
 
-    const currentPattern = patterns[patternIndex];
-    const isLast = patternIndex === patterns.length - 1;
+    const currentPattern = patterns[patternIndex]
+    const isLast = patternIndex === patterns.length - 1
 
-    const dirs = this._filterEntry("dir", entries);
-    const files = this._filterEntry("file", entries);
+    const dirs = this._filterEntry('dir', entries)
+    const files = this._filterEntry('file', entries)
 
     if (isLast) {
       const matchedFiles = files.filter((entry) =>
-        micromatch.isMatch(path + entry.name, patterns.join("/")),
-      );
-      return matchedFiles;
+        micromatch.isMatch(path + entry.name, patterns.join('/')),
+      )
+      return matchedFiles
     }
 
-    if (currentPattern === "**") {
-      const files = await this._glob(patterns, patterns.length - 1, cd, path);
-      result.push(...files);
+    if (currentPattern === '**') {
+      const files = await this._glob(patterns, patterns.length - 1, cd, path)
+      result.push(...files)
 
       for (const dir of dirs) {
         const files = await this._glob(
@@ -169,13 +166,13 @@ export class WebFsDirectoryHandle extends WebFsHandle {
           patternIndex,
           dir,
           `${path}${dir.name}/`,
-        );
-        result.push(...files);
+        )
+        result.push(...files)
       }
     } else {
       const matchedDirs = dirs.filter((entry) =>
         micromatch.isMatch(entry.name, patterns[patternIndex]),
-      );
+      )
 
       for (const dir of matchedDirs) {
         const files = await this._glob(
@@ -183,12 +180,12 @@ export class WebFsDirectoryHandle extends WebFsHandle {
           patternIndex + 1,
           dir,
           `${path}${dir.name}/`,
-        );
-        result.push(...files);
+        )
+        result.push(...files)
       }
     }
 
-    return result;
+    return result
   }
 
   /**
@@ -200,7 +197,7 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     filePath: string,
     options?: WebFsPermissionOptions,
   ): Promise<WebFsFileHandle | undefined> {
-    return await this.file(filePath, { ...options, create: true });
+    return await this.file(filePath, { ...options, create: true })
   }
 
   /**
@@ -212,7 +209,7 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     dirPath: string,
     options?: WebFsPermissionOptions,
   ): Promise<WebFsDirectoryHandle | undefined> {
-    return await this.dir(dirPath, { ...options, create: true });
+    return await this.dir(dirPath, { ...options, create: true })
   }
 
   /**
@@ -223,18 +220,18 @@ export class WebFsDirectoryHandle extends WebFsHandle {
    */
   async remove(entryPath: string): Promise<boolean> {
     try {
-      const entryNames = path.resolve(entryPath).split(path.sep).slice(1);
-      const lastEntryName = entryNames.pop()!;
+      const entryNames = path.resolve(entryPath).split(path.sep).slice(1)
+      const lastEntryName = entryNames.pop()!
 
-      if (lastEntryName === "") {
-        return false;
+      if (lastEntryName === '') {
+        return false
       }
 
-      const dirHandle = await this._dirByPath(entryNames);
-      await dirHandle.removeEntry(entryPath, { recursive: true });
-      return true;
+      const dirHandle = await this._dirByPath(entryNames)
+      await dirHandle.removeEntry(entryPath, { recursive: true })
+      return true
     } catch {
-      return false;
+      return false
     }
   }
 
@@ -250,11 +247,11 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     depth = 1,
   }: WebFsEntryListOptions = {}): Promise<string[]> {
     if (!file && !dir) {
-      return [];
+      return []
     }
 
-    const tree = await this._tree(toFilterType(file, dir), depth);
-    return this._flat(tree).map((entry) => entry.name);
+    const tree = await this._tree(toFilterType(file, dir), depth)
+    return this._flat(tree).map((entry) => entry.name)
   }
 
   /**
@@ -271,16 +268,16 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     (WebFsFileHandle | WebFsDirectoryHandle)[]
   > {
     if (!file && !dir) {
-      return [];
+      return []
     }
 
-    const tree = await this._tree(toFilterType(file, dir), depth);
+    const tree = await this._tree(toFilterType(file, dir), depth)
     const entries = this._flat(tree).map((entry) =>
-      entry.kind === "file"
-        ? WebFsFileHandle.create(entry as FileSystemFileHandle)
-        : WebFsDirectoryHandle.create(entry as FileSystemDirectoryHandle),
-    );
-    return (await Promise.all(entries)).filter((entry) => !!entry);
+      entry.kind === 'file' ?
+        WebFsFileHandle.create(entry as FileSystemFileHandle)
+      : WebFsDirectoryHandle.create(entry as FileSystemDirectoryHandle),
+    )
+    return (await Promise.all(entries)).filter((entry) => !!entry)
   }
 
   /**
@@ -293,11 +290,11 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     dir = true,
     depth = 1,
   }: WebFsEntryListOptions = {}): Promise<WebFsTreeResult> {
-    const treeResult = await this._tree(toFilterType(file, dir), depth);
+    const treeResult = await this._tree(toFilterType(file, dir), depth)
     return {
       handle: this._handle,
       children: treeResult,
-    };
+    }
   }
 
   /**
@@ -326,8 +323,8 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     dir = true,
     depth = 1,
   }: WebFsEntryListOptions = {}): Promise<string> {
-    const lines = await this._toString(toFilterType(file, dir), depth);
-    return lines.join("\n");
+    const lines = await this._toString(toFilterType(file, dir), depth)
+    return lines.join('\n')
   }
 
   private async _tree(
@@ -336,49 +333,49 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     depth: number = 1,
     cd: FileSystemDirectoryHandle = this._handle,
   ): Promise<WebFsTreeResult[]> {
-    if (type === "none") {
-      return [];
+    if (type === 'none') {
+      return []
     }
 
-    const entries = await Array.fromAsync(cd.values());
-    const filteredEntries = this._filterEntry(type, entries);
+    const entries = await Array.fromAsync(cd.values())
+    const filteredEntries = this._filterEntry(type, entries)
 
-    const list: WebFsTreeResult[] = [];
+    const list: WebFsTreeResult[] = []
     for (const entry of filteredEntries) {
-      if (entry.kind === "file" || depth === maxDepth) {
+      if (entry.kind === 'file' || depth === maxDepth) {
         list.push({
           handle: entry as FileSystemFileHandle,
           children: undefined,
-        });
+        })
       } else {
         const tre = await this._tree(
           type,
           maxDepth,
           depth + 1,
           entry as FileSystemDirectoryHandle,
-        );
+        )
         list.push({
           handle: entry as FileSystemDirectoryHandle,
           children: tre,
-        });
+        })
       }
     }
 
-    return list;
+    return list
   }
 
   private _flat(tree: WebFsTreeResult[]): FileSystemHandle[] {
-    const result: FileSystemHandle[] = [];
+    const result: FileSystemHandle[] = []
 
     for (const { handle, children } of tree) {
-      result.push(handle);
+      result.push(handle)
 
       if (children) {
-        result.push(...this._flat(children));
+        result.push(...this._flat(children))
       }
     }
 
-    return result;
+    return result
   }
 
   private async _toString(
@@ -387,73 +384,71 @@ export class WebFsDirectoryHandle extends WebFsHandle {
     depth: number = 1,
     cd: FileSystemDirectoryHandle = this._handle,
   ): Promise<string[]> {
-    if (type === "none") {
-      return [`${cd.name}/`];
+    if (type === 'none') {
+      return [`${cd.name}/`]
     }
 
-    const entries = await Array.fromAsync(cd.values());
-    const filteredEntries = this._filterEntry(type, entries);
-    const lastIndex = filteredEntries.length - 1;
+    const entries = await Array.fromAsync(cd.values())
+    const filteredEntries = this._filterEntry(type, entries)
+    const lastIndex = filteredEntries.length - 1
 
-    const lines = [];
-    lines.push(`${cd.name}/`);
+    const lines = []
+    lines.push(`${cd.name}/`)
 
     for (const [index, entry] of filteredEntries.entries()) {
-      let prefix = index < lastIndex ? "├─" : "└─";
+      let prefix = index < lastIndex ? '├─' : '└─'
 
-      if (entry.kind === "file") {
-        lines.push(`${prefix} ${entry.name}`);
+      if (entry.kind === 'file') {
+        lines.push(`${prefix} ${entry.name}`)
       } else if (depth === maxDepth) {
-        lines.push(`${prefix} ${entry.name}/`);
+        lines.push(`${prefix} ${entry.name}/`)
       } else {
         const innerLines = await this._toString(
           type,
           maxDepth,
           depth + 1,
           entry as FileSystemDirectoryHandle,
-        );
+        )
         lines.push(
           ...innerLines.map((line, i) => {
-            let prefix: string;
+            let prefix: string
             if (index === lastIndex) {
-              prefix = i === 0 ? "└─" : "  ";
+              prefix = i === 0 ? '└─' : '  '
             } else {
-              prefix = i === 0 ? "├─" : "│ ";
+              prefix = i === 0 ? '├─' : '│ '
             }
 
-            return `${prefix} ${line}`;
+            return `${prefix} ${line}`
           }),
-        );
+        )
       }
     }
 
-    return lines;
+    return lines
   }
 
   private _filterEntry<T extends FilterType>(
     type: T,
     entries: FileSystemHandle[],
   ): FilterReturnType[T] {
-    if (type === "none") return [];
+    if (type === 'none') return []
 
     const result = entries.filter((entry) => {
-      if (type === "all") return true;
+      if (type === 'all') return true
 
-      return type === "file"
-        ? entry.kind === "file"
-        : entry.kind === "directory";
-    });
-    return result as FilterReturnType[T];
+      return type === 'file' ? entry.kind === 'file' : entry.kind === 'directory'
+    })
+    return result as FilterReturnType[T]
   }
 
   private async _dirByPath(directoryNames: string[], create: boolean = false) {
-    let handle = this._handle;
+    let handle = this._handle
     for (const directoryName of directoryNames) {
       handle = await handle.getDirectoryHandle(directoryName, {
         create,
-      });
+      })
     }
 
-    return handle;
+    return handle
   }
 }

@@ -1,17 +1,17 @@
+import { WebFsDirectoryHandle } from './WebFsDirectoryHandle'
+import { WebFsFileHandle } from './WebFsFileHandle'
+import { WebFsFileHandleList } from './WebFsFileHandleList'
+import { HandleStore } from './services/HandleStore'
 import {
   WebFsDirectoryPickOptions,
   WebFsFilePickOptions,
   WebFsPermissionOptions,
-} from "./types";
-import { WebFsDirectoryHandle } from "./WebFsDirectoryHandle";
-import { WebFsFileHandle } from "./WebFsFileHandle";
-import { HandleStore } from "./services/HandleStore";
-import { WebFsFileHandleList } from "./WebFsFileHandleList";
+} from './types'
 
-export * from "./types";
-export * from "./WebFsHandle";
-export * from "./WebFsFileHandle";
-export * from "./WebFsDirectoryHandle";
+export * from './types'
+export * from './WebFsHandle'
+export * from './WebFsFileHandle'
+export * from './WebFsDirectoryHandle'
 
 /**
  * ブラウザが`web-fs`に対応しているかを確認します。\
@@ -22,9 +22,9 @@ export * from "./WebFsDirectoryHandle";
 export function supportsWebFs(): boolean {
   return (
     globalThis.isSecureContext &&
-    "showOpenFilePicker" in globalThis &&
-    "showDirectoryPicker" in globalThis
-  );
+    'showOpenFilePicker' in globalThis &&
+    'showDirectoryPicker' in globalThis
+  )
 }
 
 /**
@@ -38,21 +38,21 @@ export async function pickFile(
 ): Promise<WebFsFileHandle | undefined> {
   try {
     if (options.persistence === true) {
-      const fileHandle = await HandleStore.getFile(options.id);
+      const fileHandle = await HandleStore.getFile(options.id)
 
       if (fileHandle) {
-        return await WebFsFileHandle.create(fileHandle[0], options.mode);
+        return await WebFsFileHandle.create(fileHandle[0], options.mode)
       }
     }
 
-    const fileHandle = await openFilePicker(options, false);
+    const fileHandle = await openFilePicker(options, false)
     if (options.persistence === true) {
-      HandleStore.setFile(options.id, fileHandle);
+      HandleStore.setFile(options.id, fileHandle)
     }
 
-    return await WebFsFileHandle.create(fileHandle[0], options.mode);
+    return await WebFsFileHandle.create(fileHandle[0], options.mode)
   } catch {
-    return undefined;
+    return undefined
   }
 }
 
@@ -67,21 +67,21 @@ export async function pickFiles(
 ): Promise<WebFsFileHandleList | undefined> {
   try {
     if (options.persistence === true) {
-      const fileListHandle = await HandleStore.getFile(options.id);
+      const fileListHandle = await HandleStore.getFile(options.id)
 
       if (fileListHandle) {
-        return await WebFsFileHandleList.create(fileListHandle, options.mode);
+        return await WebFsFileHandleList.create(fileListHandle, options.mode)
       }
     }
 
-    const fileListHandle = await openFilePicker(options, true);
+    const fileListHandle = await openFilePicker(options, true)
     if (options.persistence === true) {
-      HandleStore.setFile(options.id, fileListHandle);
+      HandleStore.setFile(options.id, fileListHandle)
     }
 
-    return await WebFsFileHandleList.create(fileListHandle, options.mode);
+    return await WebFsFileHandleList.create(fileListHandle, options.mode)
   } catch {
-    return undefined;
+    return undefined
   }
 }
 
@@ -96,25 +96,25 @@ export async function pickDirectory(
 ): Promise<WebFsDirectoryHandle | undefined> {
   try {
     if (options.persistence === true) {
-      const directoryHandle = await HandleStore.getDirectory(options.id);
+      const directoryHandle = await HandleStore.getDirectory(options.id)
 
       if (directoryHandle) {
-        return await WebFsDirectoryHandle.create(directoryHandle, options.mode);
+        return await WebFsDirectoryHandle.create(directoryHandle, options.mode)
       }
     }
 
     const directoryHandle = await globalThis.showDirectoryPicker({
       id: `web-fs_${options.id}`,
       startIn: options.startIn,
-    });
+    })
 
     if (options.persistence === true) {
-      HandleStore.setDirectory(options.id, directoryHandle);
+      HandleStore.setDirectory(options.id, directoryHandle)
     }
 
-    return await WebFsDirectoryHandle.create(directoryHandle, options.mode);
+    return await WebFsDirectoryHandle.create(directoryHandle, options.mode)
   } catch {
-    return undefined;
+    return undefined
   }
 }
 
@@ -130,13 +130,10 @@ export async function mountFile(
   options: WebFsPermissionOptions = {},
 ): Promise<WebFsFileHandle | undefined> {
   try {
-    const webFsFileHandle = await WebFsFileHandle.create(
-      fileHandle,
-      options.mode,
-    );
-    return webFsFileHandle;
+    const webFsFileHandle = await WebFsFileHandle.create(fileHandle, options.mode)
+    return webFsFileHandle
   } catch {
-    return undefined;
+    return undefined
   }
 }
 
@@ -155,10 +152,10 @@ export async function mountDirectory(
     const webFsDirectoryHandle = await WebFsDirectoryHandle.create(
       directoryHandle,
       options.mode,
-    );
-    return webFsDirectoryHandle;
+    )
+    return webFsDirectoryHandle
   } catch {
-    return undefined;
+    return undefined
   }
 }
 
@@ -168,7 +165,7 @@ export async function mountDirectory(
  * @param id 削除したいファイルハンドルのid。
  */
 export async function unmountFile(id: string): Promise<void> {
-  await HandleStore.delFile(id);
+  await HandleStore.delFile(id)
 }
 
 /**
@@ -177,7 +174,7 @@ export async function unmountFile(id: string): Promise<void> {
  * @param id 削除したいディレクトリハンドルのid。
  */
 export async function unmountDirectory(id: string): Promise<void> {
-  await HandleStore.delDirectory(id);
+  await HandleStore.delDirectory(id)
 }
 
 function openFilePicker(options: WebFsFilePickOptions, multiple: boolean) {
@@ -189,8 +186,8 @@ function openFilePicker(options: WebFsFilePickOptions, multiple: boolean) {
     types: options.types?.map(({ description, accept }) => ({
       description,
       accept: {
-        "*/*": accept,
+        '*/*': accept,
       },
     })),
-  });
+  })
 }

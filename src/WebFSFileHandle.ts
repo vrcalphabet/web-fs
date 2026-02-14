@@ -1,17 +1,17 @@
-import md5 from "md5";
-import { WebFsFileHashType, WebFsFileInfo } from "./types";
-import { WebFsHandle } from "./WebFsHandle";
+import { WebFsHandle } from './WebFsHandle'
+import { WebFsFileHashType, WebFsFileInfo } from './types'
+import md5 from 'md5'
 
 export class WebFsFileHandle extends WebFsHandle {
   /**
    * ファイルハンドルの種類。常に`"file"`を返します。
    */
-  readonly type = "file";
-  protected _handle;
+  readonly type = 'file'
+  protected _handle
 
   private constructor(handle: FileSystemFileHandle) {
-    super(handle);
-    this._handle = handle;
+    super(handle)
+    this._handle = handle
   }
 
   /**
@@ -23,13 +23,13 @@ export class WebFsFileHandle extends WebFsHandle {
    */
   static async create(
     handle: FileSystemFileHandle,
-    mode: FileSystemPermissionMode = "read",
+    mode: FileSystemPermissionMode = 'read',
   ): Promise<WebFsFileHandle | undefined> {
-    const instance = new this(handle);
-    const verified = await instance._verifyPermission(mode);
-    if (!verified) return undefined;
+    const instance = new this(handle)
+    const verified = await instance._verifyPermission(mode)
+    if (!verified) return undefined
 
-    return instance;
+    return instance
   }
 
   /**
@@ -39,13 +39,13 @@ export class WebFsFileHandle extends WebFsHandle {
    * @returns ファイルの情報。
    */
   async info(): Promise<WebFsFileInfo> {
-    const file = await this._handle.getFile();
+    const file = await this._handle.getFile()
     return {
       name: file.name,
       size: file.size,
       mimeType: file.type,
       lastModified: file.lastModified,
-    };
+    }
   }
 
   /**
@@ -54,7 +54,7 @@ export class WebFsFileHandle extends WebFsHandle {
    * @returns ファイルの内容を解釈した文字列を返します。
    */
   async text(): Promise<string> {
-    return (await this._handle.getFile()).text();
+    return (await this._handle.getFile()).text()
   }
 
   /**
@@ -64,9 +64,9 @@ export class WebFsFileHandle extends WebFsHandle {
    */
   async json<T = unknown>(): Promise<T | undefined> {
     try {
-      return JSON.parse(await this.text()) as T;
+      return JSON.parse(await this.text()) as T
     } catch {
-      return undefined;
+      return undefined
     }
   }
 
@@ -76,7 +76,7 @@ export class WebFsFileHandle extends WebFsHandle {
    * @returns ファイルの`Blob`オブジェクト。
    */
   async blob(): Promise<Blob> {
-    return await this._handle.getFile();
+    return await this._handle.getFile()
   }
 
   /**
@@ -85,7 +85,7 @@ export class WebFsFileHandle extends WebFsHandle {
    * @returns ファイルの`arrayBuffer`オブジェクト。
    */
   async arrayBuffer(): Promise<ArrayBuffer> {
-    return (await this.blob()).arrayBuffer();
+    return (await this.blob()).arrayBuffer()
   }
 
   /**
@@ -94,21 +94,19 @@ export class WebFsFileHandle extends WebFsHandle {
    *
    * @returns ハッシュ化された16進数の文字列。
    */
-  async hash(algo: WebFsFileHashType = "sha256"): Promise<string> {
-    if (algo === "md5") {
-      const text = await this.text();
-      return md5(text);
+  async hash(algo: WebFsFileHashType = 'sha256'): Promise<string> {
+    if (algo === 'md5') {
+      const text = await this.text()
+      return md5(text)
     } else {
-      const buffer = await this.arrayBuffer();
+      const buffer = await this.arrayBuffer()
       const hashBuffer = await crypto.subtle.digest(
-        { sha256: "SHA-256", sha512: "SHA-512" }[algo],
+        { sha256: 'SHA-256', sha512: 'SHA-512' }[algo],
         buffer,
-      );
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hash = hashArray
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-      return hash;
+      )
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const hash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+      return hash
     }
   }
 
@@ -118,7 +116,7 @@ export class WebFsFileHandle extends WebFsHandle {
    * @returns ファイルの書き込みに成功した場合は`true`、失敗した場合は`false`。
    */
   async write(data: string): Promise<boolean> {
-    return this._write({ data, append: false });
+    return this._write({ data, append: false })
   }
 
   /**
@@ -127,7 +125,7 @@ export class WebFsFileHandle extends WebFsHandle {
    * @returns ファイルの書き込みに成功した場合は`true`、失敗した場合は`false`。
    */
   async append(data: string): Promise<boolean> {
-    return this._write({ data, append: true });
+    return this._write({ data, append: true })
   }
 
   /**
@@ -135,9 +133,9 @@ export class WebFsFileHandle extends WebFsHandle {
    *
    * @returns ファイルの読み込みストリーム。
    */
-  async readStream(): Promise<ReturnType<Blob["stream"]>> {
-    const file = await this._handle.getFile();
-    return file.stream();
+  async readStream(): Promise<ReturnType<Blob['stream']>> {
+    const file = await this._handle.getFile()
+    return file.stream()
   }
 
   /**
@@ -148,25 +146,25 @@ export class WebFsFileHandle extends WebFsHandle {
   async writeStream(
     options?: FileSystemCreateWritableOptions,
   ): Promise<FileSystemWritableFileStream> {
-    return await this._handle.createWritable(options);
+    return await this._handle.createWritable(options)
   }
 
   private async _write(options: { data: string; append: boolean }) {
     try {
       const writeStream = await this._handle.createWritable({
         keepExistingData: options.append,
-      });
+      })
 
       if (options.append) {
-        const file = await this._handle.getFile();
-        writeStream.seek(file.size);
+        const file = await this._handle.getFile()
+        writeStream.seek(file.size)
       }
 
-      writeStream.write(options.data);
-      writeStream.close();
-      return true;
+      writeStream.write(options.data)
+      writeStream.close()
+      return true
     } catch {
-      return false;
+      return false
     }
   }
 }
