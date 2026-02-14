@@ -18,6 +18,7 @@
     "format": "prettier --write \"src/**/*.ts\" --log-level warn",
     "docs": "npx typedoc"
   },
+  "keywords": ["filesystem", "filesystemhandle"],
   "license": "MIT",
   "devDependencies": {
     "@types/md5": "^2.3.6",
