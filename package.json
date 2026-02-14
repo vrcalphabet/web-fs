@@ -18,6 +18,14 @@
     "format": "prettier --write \"src/**/*.ts\" --log-level warn",
     "docs": "npx typedoc"
   },
+  "homepage": "https://github.com/vrcalphabet/web-fs",
+  "bugs": {
+    "url": "https://github.com/vrcalphabet/web-fs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vrcalphabet/web-fs.git"
+  },
   "keywords": ["filesystem", "filesystemhandle"],
   "license": "MIT",
   "devDependencies": {
