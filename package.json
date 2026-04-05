@@ -36,19 +36,16 @@
   "license": "MIT",
   "devDependencies": {
     "@types/md5": "^2.3.6",
-    "@types/micromatch": "^4.0.10",
-    "@types/node": "^25.0.10",
+    "@types/node": "^25.5.0",
     "@types/wicg-file-system-access": "^2023.10.7",
-    "madge": "^8.0.0",
-    "typedoc": "^0.28.16",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.5.4",
-    "vite-plugin-node-polyfills": "^0.2.0"
+    "typedoc": "^0.28.18",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vite-plugin-dts": "^4.5.4"
   },
   "dependencies": {
     "idb-keyval": "^6.2.2",
     "md5": "^2.3.0",
-    "micromatch": "^4.0.8"
+    "web-fs-glob": "^1.0.4"
   }
 }
