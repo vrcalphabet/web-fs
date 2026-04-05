@@ -135,7 +135,7 @@ export class WebFsFileHandle extends WebFsHandle {
 
       await writeStream.write(data)
       await writeStream.close()
-      
+
       return true
     } catch {
       return false

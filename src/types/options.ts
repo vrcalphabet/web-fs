@@ -7,7 +7,7 @@ export type WebFsPickOptions = WebFsPermissionOptions & {
   /**
    * IDごとに、前回開いたディレクトリを記憶します。**idには、26文字の文字数上限があります。**\
    * 文字数上限を超えた場合は、`TypeError`がスローされます。
-   * 
+   *
    * ネイティブのidの文字数上限は32文字ですが、必ず`webfs_`というプレフィックスがつくため、`32 - 6 = 26`文字となります。
    */
   id?: string
@@ -67,7 +67,7 @@ export type WebFsListOptions = {
 }
 
 /** ツリー形式でエントリを取得する際のオプションです。 */
-export type WebFsTreeOptions =  {
+export type WebFsTreeOptions = {
   /** 要素にファイルハンドルを含めるかを指定します。デフォルトは`true`です。 */
   file?: boolean
   /** 再帰する深さを指定します。デフォルトは`1`です。 */

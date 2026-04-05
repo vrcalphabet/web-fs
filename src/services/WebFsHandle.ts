@@ -1,4 +1,3 @@
-
 export abstract class WebFsHandle {
   abstract readonly type: 'file' | 'directory'
   protected readonly _entry: FileSystemHandle

@@ -4,5 +4,15 @@
   "printWidth": 85,
   "checkIgnorePragma": true,
   "experimentalTernaries": true,
+  "importOrder": [
+    "^p?react",
+    "<THIRD_PARTY_MODULES>",
+    "^(?!.*\\.\\w+$)\\.\\./",
+    "^(?!.*\\.\\w+$)\\./",
+    "\\.\\w+$"
+  ],
+  "importOrderSeparation": false,
+  "importOrderSortSpecifiers": true,
+  "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
   "plugins": ["@trivago/prettier-plugin-sort-imports"]
 }
