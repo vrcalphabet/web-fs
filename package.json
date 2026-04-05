@@ -1,6 +1,6 @@
 {
   "name": "@vrcalphabet/web-fs",
-  "description": "TypeScriptで書かれたFile System APIを簡単に操作するためのラッパーライブラリ",
+  "description": "TypeScriptで書かれたFile System Access APIを簡単に操作するためのラッパーライブラリ",
   "publishConfig": {
     "access": "public"
   },
@@ -14,7 +14,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "graph": "madge --image graph.png src/main.ts",
     "format": "prettier --write \"src/**/*.ts\" --log-level warn",
     "docs": "npx typedoc"
   },
@@ -26,7 +25,14 @@
     "type": "git",
     "url": "git+https://github.com/vrcalphabet/web-fs.git"
   },
-  "keywords": ["filesystem", "filesystemhandle"],
+  "keywords": [
+    "filesystem",
+    "filesystemhandle",
+    "filesystemfilehandle",
+    "filesystemdirectoryhandle",
+    "fsa",
+    "glob"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@types/md5": "^2.3.6",
