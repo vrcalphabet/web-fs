@@ -1,11 +1,6 @@
 {
   "entryPoints": [
-    "src/main.ts",
-    "src/WebFsHandle.ts",
-    "src/WebFsFileHandle.ts",
-    "src/WebFsFileHandleList.ts",
-    "src/WebFsDirectoryHandle.ts",
-    "src/types/index.ts"
+    "src/main.ts"
   ],
   "exclude": ["src/services/**/*.ts"],
   "out": "docs",
