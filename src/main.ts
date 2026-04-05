@@ -1,17 +1,20 @@
-import { WebFsDirectoryHandle } from './WebFsDirectoryHandle'
-import { WebFsFileHandle } from './WebFsFileHandle'
-import { WebFsFileHandleList } from './WebFsFileHandleList'
-import { HandleStore } from './services/HandleStore'
+import { WebFsPermissionDenied } from './errors/WebFsPermissionDenied'
+import { createHandle, createHandles } from './lib/createHandle'
+import { pickDirectorySafe, pickFileSafe } from './lib/openPicker'
+import { WebFsDirectoryHandle } from './services/WebFsDirectoryHandle'
+import { WebFsFileHandle } from './services/WebFsFileHandle'
+import { FileSystemEntry, WebFsEntry } from './types/entry'
 import {
   WebFsDirectoryPickOptions,
   WebFsFilePickOptions,
   WebFsPermissionOptions,
-} from './types'
+} from './types/options'
 
-export * from './types'
-export * from './WebFsHandle'
-export * from './WebFsFileHandle'
-export * from './WebFsDirectoryHandle'
+export type * from './types'
+export * from './services/WebFsHandle'
+export * from './services/WebFsFileHandle'
+export * from './services/WebFsDirectoryHandle'
+export * from './utils/filter'
 
 /**
  * ブラウザが`web-fs`に対応しているかを確認します。\
@@ -35,54 +38,26 @@ export function supportsWebFs(): boolean {
  */
 export async function pickFile(
   options: WebFsFilePickOptions = {},
-): Promise<WebFsFileHandle | undefined> {
-  try {
-    if (options.persistence === true) {
-      const fileHandle = await HandleStore.getFile(options.id)
+): Promise<WebFsFileHandle | WebFsPermissionDenied | undefined> {
+  const fileEntries = await pickFileSafe(options, false)
+  if (!fileEntries) return undefined
 
-      if (fileHandle) {
-        return await WebFsFileHandle.create(fileHandle[0], options.mode)
-      }
-    }
-
-    const fileHandle = await openFilePicker(options, false)
-    if (options.persistence === true) {
-      HandleStore.setFile(options.id, fileHandle)
-    }
-
-    return await WebFsFileHandle.create(fileHandle[0], options.mode)
-  } catch {
-    return undefined
-  }
+  return createHandle(fileEntries[0], options.mode)
 }
 
 /**
- * ユーザに複数のファイルを選択させ、そのファイルリストを`WebFsFileHandleList`でラップしたものを返します。
+ * ユーザに複数のファイルを選択させ、そのファイルリストを返します。
  *
  * @param options ファイル選択のオプション。
  * @returns 成功した場合は`WebFsFileHandleList`、選択を取り消した場合やエラーが出た場合は`undefined`。
  */
 export async function pickFiles(
   options: WebFsFilePickOptions = {},
-): Promise<WebFsFileHandleList | undefined> {
-  try {
-    if (options.persistence === true) {
-      const fileListHandle = await HandleStore.getFile(options.id)
+): Promise<(WebFsFileHandle | WebFsPermissionDenied)[] | undefined> {
+  const fileEntries = await pickFileSafe(options, true)
+  if (!fileEntries) return undefined
 
-      if (fileListHandle) {
-        return await WebFsFileHandleList.create(fileListHandle, options.mode)
-      }
-    }
-
-    const fileListHandle = await openFilePicker(options, true)
-    if (options.persistence === true) {
-      HandleStore.setFile(options.id, fileListHandle)
-    }
-
-    return await WebFsFileHandleList.create(fileListHandle, options.mode)
-  } catch {
-    return undefined
-  }
+  return createHandles(fileEntries, options.mode)
 }
 
 /**
@@ -93,101 +68,38 @@ export async function pickFiles(
  */
 export async function pickDirectory(
   options: WebFsDirectoryPickOptions = {},
-): Promise<WebFsDirectoryHandle | undefined> {
-  try {
-    if (options.persistence === true) {
-      const directoryHandle = await HandleStore.getDirectory(options.id)
+): Promise<WebFsDirectoryHandle | WebFsPermissionDenied | undefined> {
+  const dirEntry = await pickDirectorySafe(options)
+  if (!dirEntry) return undefined
 
-      if (directoryHandle) {
-        return await WebFsDirectoryHandle.create(directoryHandle, options.mode)
-      }
-    }
-
-    const directoryHandle = await globalThis.showDirectoryPicker({
-      id: `web-fs_${options.id}`,
-      startIn: options.startIn,
-    })
-
-    if (options.persistence === true) {
-      HandleStore.setDirectory(options.id, directoryHandle)
-    }
-
-    return await WebFsDirectoryHandle.create(directoryHandle, options.mode)
-  } catch {
-    return undefined
-  }
+  return createHandle(dirEntry, options.mode)
 }
 
 /**
  * ファイルを`WebFsFileHandle`でラップしたものを返します。
  *
- * @param fileHandle すでに取得しているファイルハンドル。
- * @param options ファイルのオプション。
- * @returns 成功した場合は`WebFsFileHandle`、エラーが出た場合は`undefined`。
+ * @param fileEntry すでに取得している`FileSystemFileHandle`。
+ * @param options 権限のオプション。
+ * @returns `WebFsFileHandle`、権限が拒否された場合は`WebFsPermissionDenied`。
  */
-export async function mountFile(
-  fileHandle: FileSystemFileHandle,
+export function mount(
+  fileEntry: FileSystemFileHandle,
+  options?: WebFsPermissionOptions,
+): Promise<WebFsFileHandle | WebFsPermissionDenied>
+/**
+ * ファイルを`WebFsDirectoryHandle`でラップしたものを返します。
+ *
+ * @param dirEntry すでに取得している`FileSystemDirectoryHandle`。
+ * @param options 権限のオプション。
+ * @returns `WebFsDirectoryHandle`、権限が拒否された場合は`WebFsPermissionDenied`。
+ */
+export function mount(
+  dirEntry: FileSystemDirectoryHandle,
+  options?: WebFsPermissionOptions,
+): Promise<WebFsDirectoryHandle | WebFsPermissionDenied>
+export function mount(
+  entry: FileSystemEntry,
   options: WebFsPermissionOptions = {},
-): Promise<WebFsFileHandle | undefined> {
-  try {
-    const webFsFileHandle = await WebFsFileHandle.create(fileHandle, options.mode)
-    return webFsFileHandle
-  } catch {
-    return undefined
-  }
-}
-
-/**
- * ディレクトリを`WebFsDirectoryHandle`でラップしたものを返します。
- *
- * @param directoryHandle すでに取得しているディレクトリハンドル。
- * @param options ディレクトリのオプション。
- * @returns 成功した場合は`WebFsDirectoryHandle`、エラーが出た場合は`undefined`。
- */
-export async function mountDirectory(
-  directoryHandle: FileSystemDirectoryHandle,
-  options: WebFsPermissionOptions = {},
-): Promise<WebFsDirectoryHandle | undefined> {
-  try {
-    const webFsDirectoryHandle = await WebFsDirectoryHandle.create(
-      directoryHandle,
-      options.mode,
-    )
-    return webFsDirectoryHandle
-  } catch {
-    return undefined
-  }
-}
-
-/**
- * 保存されたファイルハンドルを削除します。
- *
- * @param id 削除したいファイルハンドルのid。
- */
-export async function unmountFile(id: string): Promise<void> {
-  await HandleStore.delFile(id)
-}
-
-/**
- * 保存されたディレクトリハンドルを削除します。
- *
- * @param id 削除したいディレクトリハンドルのid。
- */
-export async function unmountDirectory(id: string): Promise<void> {
-  await HandleStore.delDirectory(id)
-}
-
-function openFilePicker(options: WebFsFilePickOptions, multiple: boolean) {
-  return globalThis.showOpenFilePicker({
-    id: `web-fs_${options.id}`,
-    excludeAcceptAllOption: !options.acceptAllExtensions,
-    startIn: options.startIn,
-    multiple: multiple,
-    types: options.types?.map(({ description, accept }) => ({
-      description,
-      accept: {
-        '*/*': accept,
-      },
-    })),
-  })
+): Promise<WebFsEntry | WebFsPermissionDenied> {
+  return createHandle(entry, options.mode)
 }
